@@ -224,5 +224,12 @@ Register expanded 16 → 17. IQCP (§493.1250) is the elective alternative to da
 - **Edited** `CLIA_CITATIONS.md` — IQCP moved from "gaps" to tracked C17. (Dev DB: run `migrate:fresh --seed` to pick up C17; prod seeds fresh with all 17.)
 - *Undo:* remove the C17 TEMPLATE row + catalog entry, revert count assertions, delete the SOP + Drive copy.
 
+### 25. Git + production deploy prep (2026-06-23)
+- **git init** + first commit on `main` (`8580e1e`, 210 files). Secrets excluded: added `/.config` to `.gitignore` (the Drive service-account key) — verified `.env`, `.config/drive-sa.json`, `vendor`, `node_modules`, `public/build` all ignored and not staged.
+- **New** `deploy/` artifacts (committed, non-secret): `RUNBOOK.md` (VPS + git + MySQL, IP-first then domain cutover), `env.production.example`, `nginx-rightsize.conf`.
+- **Edited** `DEPLOY.md` §3 — corrected stale seeding (17-obligation register via `lab:create`; `db:seed` is dev-only demo data; added first super-admin bootstrap via tinker).
+- Target deploy: plain VPS, git pull, MySQL (ready), Phase A on server IP (dev-login is `local`-only; Google OAuth needs a domain+https), Phase B = domain + SSL + Google SSO + SMTP.
+- Next (user): create a PRIVATE remote, `git push -u origin main`, then follow `deploy/RUNBOOK.md` on the server.
+
 ## Docs updated (outside the project)
 - `OneDrive/Documents/RSL/HANDOFF.md` and the project memory file — kept in sync with the above.
