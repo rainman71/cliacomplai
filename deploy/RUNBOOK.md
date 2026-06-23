@@ -2,28 +2,28 @@
 
 Tailored to: a Linux VPS, code shipped via **git**, **MySQL already set up**, first bring-up on the
 **server IP** (domain + SSL + Google SSO follow in Phase B). See `DEPLOY.md` for the full reference
-and the HIPAA checklist. Run as a sudo-capable user; the app lives at `/var/www/rightsize-compliance`.
+and the HIPAA checklist. Run as a sudo-capable user; the app lives at `/var/www/cliacomplai`.
 
 ---
 
-## One-time: get the code into git and onto the server
+## One-time: get the code onto the server
 
-**On your machine** (already a git repo now):
-```bash
-# create a PRIVATE repo on GitHub/GitLab first, then:
-git remote add origin git@github.com:<you>/rightsize-compliance.git
-git push -u origin main
-```
+Repo: **`https://github.com/rainman71/cliacomplai`** (private). Code already pushed to `main`.
 
-**On the server:**
+**Private-repo auth on the server** (a server can't do a browser login — pick one):
+- **Deploy key (SSH, recommended):** `ssh-keygen -t ed25519 -C "cliacomplai-server"`, then add the
+  `.pub` in GitHub → repo → **Settings → Deploy keys → Add deploy key** (read-only). Clone via SSH.
+- **PAT (HTTPS):** create a fine-grained token with read on this repo; clone with it in the URL.
+
+**Clone (to `/var/www/cliacomplai`):**
 ```bash
 sudo mkdir -p /var/www && cd /var/www
-sudo git clone git@github.com:<you>/rightsize-compliance.git rightsize-compliance
-sudo chown -R $USER:$USER rightsize-compliance
-cd rightsize-compliance
+sudo git clone git@github.com:rainman71/cliacomplai.git cliacomplai   # or the https+PAT URL
+sudo chown -R $USER:$USER cliacomplai
+cd cliacomplai
 ```
 
-**Ship the two secrets out-of-band** (they're git-ignored on purpose — use scp/sftp):
+**Ship the two secrets out-of-band** (git-ignored on purpose — use scp/sftp):
 ```bash
 # from your machine:
 scp .config/drive-sa.json   you@SERVER:/tmp/drive-sa.json
@@ -68,7 +68,7 @@ Then drop in the Nginx site (`deploy/nginx-rightsize.conf`) and reload Nginx (se
 ## Scheduler (one cron entry)
 
 ```cron
-* * * * * cd /var/www/rightsize-compliance && php artisan schedule:run >> /dev/null 2>&1
+* * * * * cd /var/www/cliacomplai && php artisan schedule:run >> /dev/null 2>&1
 ```
 Fires `compliance:reminders` (daily 07:00), `compliance:overdue-digest` (Mon 07:30),
 `compliance:ingest-evidence --apply` (daily 06:30). Mail uses the `log` driver until SMTP is set.

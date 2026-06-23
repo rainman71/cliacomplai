@@ -19,8 +19,8 @@ HIPAA-appropriate deployment (Linux + MySQL). Work top to bottom.
 ## 1. Get the code & dependencies
 
 ```bash
-git clone <your-repo> /var/www/rightsize-compliance   # or copy the project
-cd /var/www/rightsize-compliance
+git clone <your-repo> /var/www/cliacomplai   # or copy the project
+cd /var/www/cliacomplai
 
 composer install --no-dev --optimize-autoloader
 npm ci
@@ -135,7 +135,7 @@ The reminder ladder + weekly digest run via the Laravel scheduler. Add ONE syste
 entry (the only cron you need):
 
 ```cron
-* * * * * cd /var/www/rightsize-compliance && php artisan schedule:run >> /dev/null 2>&1
+* * * * * cd /var/www/cliacomplai && php artisan schedule:run >> /dev/null 2>&1
 ```
 
 This fires `compliance:reminders` daily at 07:00 and `compliance:overdue-digest`
@@ -151,7 +151,7 @@ Point the document root at `public/`, pass PHP to PHP-FPM, force HTTPS.
 server {
     listen 443 ssl;
     server_name compliance.yourdomain.com;
-    root /var/www/rightsize-compliance/public;
+    root /var/www/cliacomplai/public;
 
     ssl_certificate     /etc/letsencrypt/live/.../fullchain.pem;
     ssl_certificate_key /etc/letsencrypt/live/.../privkey.pem;
