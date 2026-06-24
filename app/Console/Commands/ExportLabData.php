@@ -21,7 +21,7 @@ class ExportLabData extends Command
     protected $description = "Export one lab's compliance data (profile + obligation dates/links by code)";
 
     /** Obligation columns that hold real, environment-portable data (not the template definition). */
-    public const OBLIGATION_FIELDS = ['last_completed', 'next_due', 'document_link', 'drive_file_id', 'signature_status', 'active'];
+    public const OBLIGATION_FIELDS = ['last_completed', 'next_due', 'document_link', 'signature_status', 'active'];
 
     public function handle(): int
     {
