@@ -467,8 +467,16 @@ new class extends Component
                                     </select>
                                 </td>
                                 <td class="px-3 py-2">
-                                    <input type="url" placeholder="Drive URL" wire:model.blur="form.{{ $o->id }}.document_link" @disabled(! $canEdit)
-                                        class="w-32 rounded border-gray-300 text-xs shadow-sm focus:border-indigo-500 focus:ring-indigo-500 disabled:bg-gray-100 disabled:text-gray-500" />
+                                    <div class="flex flex-col gap-1">
+                                        <input type="url" placeholder="Drive URL" wire:model.blur="form.{{ $o->id }}.document_link" @disabled(! $canEdit)
+                                            class="w-32 rounded border-gray-300 text-xs shadow-sm focus:border-indigo-500 focus:ring-indigo-500 disabled:bg-gray-100 disabled:text-gray-500" />
+                                        @if (filled($form[$o->id]['document_link'] ?? null))
+                                            <a href="{{ $form[$o->id]['document_link'] }}" target="_blank" rel="noopener noreferrer"
+                                                class="inline-flex items-center gap-0.5 text-xs font-medium text-indigo-600 hover:text-indigo-800 hover:underline">
+                                                Open ↗
+                                            </a>
+                                        @endif
+                                    </div>
                                 </td>
                                 <td class="px-3 py-2">
                                     <input type="text" placeholder="…" wire:model.blur="form.{{ $o->id }}.notes" @disabled(! $canEdit)

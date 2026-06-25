@@ -231,5 +231,24 @@ Register expanded 16 → 17. IQCP (§493.1250) is the elective alternative to da
 - Target deploy: plain VPS, git pull, MySQL (ready), Phase A on server IP (dev-login is `local`-only; Google OAuth needs a domain+https), Phase B = domain + SSL + Google SSO + SMTP.
 - Next (user): create a PRIVATE remote, `git push -u origin main`, then follow `deploy/RUNBOOK.md` on the server.
 
+### 26. Deployed to production server (IP staging) (2026-06-24)
+First server deploy. DigitalOcean droplet `162.243.32.20`, `/var/www/cliacomplai`, code via git
+(`rainman71/cliacomplai`). PHP 8.4 (ondrej), Composer install, `npm run build`, MySQL `rightsize`
+db/user, `migrate --force` + `lab:create` (17 obligations), `optimize`. Served by an **Apache vhost on
+:8080** (the box is shared with cirms/solvedhealth on Apache 80/443 + leftover nginx configs; isolated
+vhost + `proxy_fcgi` → `php8.4-fpm.sock` avoids the conflict). Confirmed serving (`curl` → 302 /login);
+reachable at `http://162.243.32.20:8080` via a DO cloud-firewall rule. **Phase B (go-live) remains:**
+domain + SSL + Google SSO + SMTP + Drive-key scp + reminders cron + DO BAA. (Deploy steps server-side;
+repo unchanged except the `deploy/` docs.)
+
+### 27. Clickable Drive link in the Full Register (2026-06-24)
+The Full Register's Drive cell showed `document_link` only inside an editable `<input type="url">`, so
+the URL had to be copy/pasted to open it (the Due Soon, Awaiting Signature, and Completeness tabs already
+rendered a clickable "Open"). Added an **Open ↗** anchor beneath the input, shown when a URL is saved,
+bound to the live `$form[$o->id]['document_link']` value so it updates immediately after an edit+blur
+(no reload). `target="_blank" rel="noopener noreferrer"`. View-only change in
+`resources/views/components/⚡compliance-dashboard.blade.php`; rebuild assets (`npm run build`) +
+`php artisan optimize` on deploy. Undo: remove the `<a>`/wrapper `<div>`, restore the bare `<input>`.
+
 ## Docs updated (outside the project)
 - `OneDrive/Documents/RSL/HANDOFF.md` and the project memory file — kept in sync with the above.
