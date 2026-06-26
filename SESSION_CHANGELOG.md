@@ -250,5 +250,22 @@ bound to the live `$form[$o->id]['document_link']` value so it updates immediate
 `resources/views/components/⚡compliance-dashboard.blade.php`; rebuild assets (`npm run build`) +
 `php artisan optimize` on deploy. Undo: remove the `<a>`/wrapper `<div>`, restore the bare `<input>`.
 
+### 28. CLIAComplai logo + brand styling (2026-06-25)
+Added the CLIAComplai logo across the app. New assets in `public/img/` (git-tracked, ship via git):
+`cliacomplai-logo.png` (816×426 horizontal lockup, 354KB), `cliacomplai-icon.png` (512×512 flask mark,
+241KB), `favicon-64.png` (5KB) — all downsized from 2–5MB Gemini originals via GD. Wired in:
+- **Login** (`auth/login.blade.php`): full lockup replaces the "Rightsize Labs" text title; card gains a
+  teal→navy gradient accent bar (`from-[#2aa7b8] via-[#2f7fb8] to-[#1c3f5f]`) + soft gradient page bg;
+  widened `max-w-sm`→`max-w-md`; subtitle now "Staff sign in".
+- **Portfolio** (`portfolio.blade.php`): lockup (`h-14`) replaces the text `<h1>`.
+- **Dashboard** (`⚡compliance-dashboard.blade.php` header): icon mark (`h-11`) added left of the lab name.
+- **Favicon + `<title>`**: favicon link + "— CLIAComplai" titles on login/portfolio/dashboard
+  (`dashboard.blade.php` title now `{{ $lab->name }} — CLIAComplai`).
+Verified visually via preview (login/portfolio/dashboard) + 102 tests green. NOT changed: the indigo
+accent color elsewhere (a full indigo→brand-teal palette pass is a separate, larger follow-up); email
+templates, PDF reports, and remaining page `<title>`s still say "Rightsize". Deploy: `npm run build` +
+`php artisan optimize` on the droplet (PNGs arrive via `git pull`). Undo: revert the 4 blades + delete
+`public/img/`.
+
 ## Docs updated (outside the project)
 - `OneDrive/Documents/RSL/HANDOFF.md` and the project memory file — kept in sync with the above.

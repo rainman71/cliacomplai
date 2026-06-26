@@ -3,15 +3,16 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>My Labs — Rightsize CLIA Compliance</title>
+    <title>My Labs — CLIAComplai</title>
+    <link rel="icon" type="image/png" href="{{ asset('img/favicon-64.png') }}">
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 <body class="min-h-screen bg-gray-50 text-gray-900 antialiased">
     <div class="mx-auto max-w-5xl px-4 py-8">
         <div class="mb-6 flex items-start justify-between gap-4">
             <div>
-                <h1 class="text-2xl font-bold tracking-tight">Rightsize CLIA Compliance</h1>
-                <p class="text-sm text-gray-500">Select a lab to work in.</p>
+                <img src="{{ asset('img/cliacomplai-logo.png') }}" alt="CLIAComplai" class="h-14 w-auto">
+                <p class="mt-2 text-sm text-gray-500">Select a lab to work in.</p>
             </div>
             <div class="flex items-center gap-3 text-sm">
                 @if ($user->isSuperAdmin() || $cards->count() > 1)

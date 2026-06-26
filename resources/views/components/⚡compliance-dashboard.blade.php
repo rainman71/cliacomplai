@@ -292,11 +292,14 @@ new class extends Component
     <div class="mx-auto max-w-7xl px-4 py-6">
         {{-- Header --}}
         <div class="mb-6 flex items-start justify-between gap-4">
-            <div>
-                <h1 class="text-2xl font-bold tracking-tight">{{ $labName }}</h1>
-                <p class="text-sm text-gray-500">
-                    CLIA Compliance · <a href="{{ route('portfolio') }}" class="text-indigo-600 hover:underline">← My Labs</a>
-                </p>
+            <div class="flex items-center gap-3">
+                <img src="{{ asset('img/cliacomplai-icon.png') }}" alt="CLIAComplai" class="h-11 w-11 shrink-0">
+                <div>
+                    <h1 class="text-2xl font-bold tracking-tight">{{ $labName }}</h1>
+                    <p class="text-sm text-gray-500">
+                        CLIA Compliance · <a href="{{ route('portfolio') }}" class="text-indigo-600 hover:underline">← My Labs</a>
+                    </p>
+                </div>
             </div>
             @auth
                 <div class="flex items-center gap-3 text-sm">
