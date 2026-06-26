@@ -3,13 +3,16 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Sign in — Rightsize CLIA Compliance</title>
+    <title>Sign in — CLIAComplai</title>
+    <link rel="icon" type="image/png" href="{{ asset('img/favicon-64.png') }}">
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
-<body class="flex min-h-screen items-center justify-center bg-gray-50 antialiased">
-    <div class="w-full max-w-sm rounded-2xl border border-gray-200 bg-white p-8 shadow-sm">
-        <h1 class="text-xl font-bold text-gray-900">Rightsize Labs</h1>
-        <p class="mt-1 text-sm text-gray-500">CLIA Compliance — staff sign in</p>
+<body class="flex min-h-screen items-center justify-center bg-gradient-to-b from-slate-50 to-[#e9f1f4] antialiased">
+    <div class="w-full max-w-md overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+        <div class="h-1.5 w-full bg-gradient-to-r from-[#2aa7b8] via-[#2f7fb8] to-[#1c3f5f]"></div>
+        <div class="p-8">
+            <img src="{{ asset('img/cliacomplai-logo.png') }}" alt="CLIAComplai — AI-Driven CLIA Compliance Platform" class="mx-auto w-full max-w-xs">
+            <p class="mt-5 text-center text-sm font-medium text-slate-500">Staff sign in</p>
 
         @if ($errors->any())
             <div class="mt-4 rounded-md bg-red-50 p-3 text-sm text-red-700 ring-1 ring-red-200">
@@ -37,6 +40,7 @@
                 </a>
             </div>
         @endif
+        </div>
     </div>
 </body>
 </html>
