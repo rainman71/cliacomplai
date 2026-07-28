@@ -7,7 +7,7 @@ use App\Services\Drive\DriveClient;
 /** In-memory DriveClient for testing filing/archiving logic without touching Google. */
 class FakeDriveClient implements DriveClient
 {
-    /** @var array<string, array{parent: string, name: string}> */
+    /** @var array<string, array{parent: string, name: string, driveId?: ?string}> */
     public array $folders = [];
 
     /** @var array<string, array{parent: string, name: string, contents: string}> */
@@ -83,7 +83,27 @@ class FakeDriveClient implements DriveClient
         return $this->files[$fileId]['contents'] ?? '';
     }
 
+    public function describeFolder(string $folderId): ?array
+    {
+        if (! isset($this->folders[$folderId])) {
+            return null;
+        }
+
+        return [
+            'id' => $folderId,
+            'name' => $this->folders[$folderId]['name'],
+            'mimeType' => 'application/vnd.google-apps.folder',
+            'driveId' => $this->folders[$folderId]['driveId'] ?? null,
+        ];
+    }
+
     // --- test helpers ---
+
+    /** Register a top-level folder the SA can "see" (driveId set => it lives in a Shared Drive). */
+    public function putFolder(string $id, string $name, ?string $driveId = null): void
+    {
+        $this->folders[$id] = ['parent' => '', 'name' => $name, 'driveId' => $driveId];
+    }
 
     /** @return list<array{id: string, name: string, contents: string}> */
     public function filesInFolder(string $folderId): array

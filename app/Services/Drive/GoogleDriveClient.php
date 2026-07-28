@@ -178,6 +178,26 @@ class GoogleDriveClient implements DriveClient
         return (string) $response->getBody();
     }
 
+    public function describeFolder(string $folderId): ?array
+    {
+        try {
+            $f = $this->service()->files->get($folderId, [
+                'fields' => 'id,name,mimeType,driveId',
+                'supportsAllDrives' => true,
+            ]);
+        } catch (\Throwable $e) {
+            // 404/403 => the SA can't see it (wrong id or not shared with the SA yet).
+            return null;
+        }
+
+        return [
+            'id' => $f->getId(),
+            'name' => $f->getName(),
+            'mimeType' => $f->getMimeType(),
+            'driveId' => $f->getDriveId(),
+        ];
+    }
+
     private function firstId(string $q): ?string
     {
         $found = $this->service()->files->listFiles([

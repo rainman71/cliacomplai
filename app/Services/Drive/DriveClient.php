@@ -41,4 +41,13 @@ interface DriveClient
 
     /** Raw bytes of the file with $fileId (used to pull blank form templates into the repo). */
     public function downloadFile(string $fileId): string;
+
+    /**
+     * Metadata for $folderId, or null if the service account cannot see it (bad id / not shared).
+     * `driveId` is set only for items that live in a Shared Drive — used to tell a real Shared Drive
+     * apart from a plain My Drive folder during lab onboarding.
+     *
+     * @return array{id: string, name: string, mimeType: string, driveId: ?string}|null
+     */
+    public function describeFolder(string $folderId): ?array;
 }

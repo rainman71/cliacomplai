@@ -4,6 +4,7 @@ namespace App\Providers;
 
 use App\Models\Lab;
 use App\Models\User;
+use App\Services\Drive\DriveClient;
 use App\Services\Drive\DriveFiler;
 use App\Services\Drive\DriveNaming;
 use App\Services\Drive\DriveScanner;
@@ -45,6 +46,19 @@ class AppServiceProvider extends ServiceProvider
             }
 
             return new NullDriveFiler($app->make(DriveNaming::class));
+        });
+
+        // Raw Drive client — bound only when a key is configured. Used by the lab-onboarding wizard
+        // to probe a pasted Shared Drive id before saving it. Left unbound (not Null) when unconfigured
+        // so callers can detect "Drive isn't set up on this server" rather than silently no-op.
+        $this->app->bind(DriveClient::class, function ($app) {
+            $credentials = config('services.google.drive_credentials');
+
+            if ($credentials && is_file($credentials)) {
+                return new GoogleDriveClient($credentials);
+            }
+
+            throw new \RuntimeException('Google Drive is not configured (GOOGLE_DRIVE_CREDENTIALS).');
         });
 
         // Drive evidence scanner (auto-ingestion's "eyes") — Google when a key is configured, else Null.
