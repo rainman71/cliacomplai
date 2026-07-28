@@ -24,6 +24,10 @@ new class extends Component
     public bool $canEdit = false;
     public bool $canManageUsers = false;
 
+    /** Table controls (shared across the obligation tabs). */
+    public string $frequencyFilter = '';   // '' = all; otherwise a freqKey ('1','6','12',… or 'event')
+    public string $sortBy = 'next_due';     // 'next_due' | 'code'
+
     public function mount(Lab $lab): void
     {
         $this->labId = $lab->id;
@@ -142,23 +146,88 @@ new class extends Component
         return $c;
     }
 
-    /** Overdue first, then due within 30 days, soonest first. */
+    /** Map an interval (months) to a stable filter key. Null interval = event-driven. */
+    public function freqKey(?int $interval): string
+    {
+        return $interval === null ? 'event' : (string) $interval;
+    }
+
+    /** Human label for an interval (months). */
+    public function freqLabel(?int $interval): string
+    {
+        if ($interval === null) {
+            return 'Event-driven';
+        }
+
+        return [1 => 'Monthly', 3 => 'Quarterly', 4 => 'Every 4 months', 6 => 'Semiannual', 12 => 'Annual', 24 => 'Biennial'][$interval]
+            ?? "Every {$interval} mo";
+    }
+
+    /** Distinct frequencies present in the register, as [key => label], soonest cadence first. */
+    #[Computed]
+    public function frequencyOptions(): array
+    {
+        return $this->rows
+            ->map(fn ($r) => $r['o']->interval_months)
+            ->unique()
+            ->sortBy(fn ($i) => $i ?? PHP_INT_MAX)   // event-driven (null) sorts last
+            ->mapWithKeys(fn ($i) => [$this->freqKey($i) => $this->freqLabel($i)])
+            ->all();
+    }
+
+    /** Apply the shared frequency filter + sort to an obligation-row collection. */
+    private function applyFilterSort($rows)
+    {
+        if ($this->frequencyFilter !== '') {
+            $rows = $rows->filter(fn ($r) => $this->freqKey($r['o']->interval_months) === $this->frequencyFilter);
+        }
+
+        $rows = $this->sortBy === 'code'
+            ? $rows->sortBy(fn ($r) => $r['o']->code)
+            : $rows->sortBy(fn ($r) => $r['next_due']?->getTimestamp() ?? PHP_INT_MAX); // next due asc, undated last
+
+        return $rows->values();
+    }
+
+    /** Overdue first, then due within 30 days, soonest first (honors the filter/sort controls). */
     #[Computed]
     public function dueSoon()
     {
-        return $this->rows
-            ->filter(fn ($r) => in_array($r['status']->value, ['overdue', 'due_30'], true))
-            ->sortBy('days')
-            ->values();
+        return $this->applyFilterSort(
+            $this->rows->filter(fn ($r) => in_array($r['status']->value, ['overdue', 'due_30'], true))
+        );
     }
 
     #[Computed]
     public function overdue()
     {
-        return $this->rows
-            ->filter(fn ($r) => $r['status']->value === 'overdue')
-            ->sortBy('days')
-            ->values();
+        return $this->applyFilterSort(
+            $this->rows->filter(fn ($r) => $r['status']->value === 'overdue')
+        );
+    }
+
+    /** Full register, filtered + sorted by the shared controls (default: next due). */
+    #[Computed]
+    public function registerRows()
+    {
+        return $this->applyFilterSort($this->rows);
+    }
+
+    /** Completeness rows with the same frequency filter + sort applied. */
+    #[Computed]
+    public function completenessRowsFiltered()
+    {
+        $rows = $this->completenessRows;
+
+        if ($this->frequencyFilter !== '') {
+            $rows = $rows->filter(fn ($r) => $this->freqKey($r['interval_months'] ?? null) === $this->frequencyFilter);
+        }
+
+        $rows = $this->sortBy === 'code'
+            ? $rows->sortBy('code')
+            : $rows->sortBy(fn ($r) => $r['next_due'] ? strtotime($r['next_due']) : PHP_INT_MAX);
+
+        return $rows->values();
     }
 
     #[Computed]
@@ -349,6 +418,41 @@ new class extends Component
             @endforeach
         </div>
 
+        {{-- Filter / sort toolbar — shown on the obligation tables --}}
+        @if (in_array($tab, ['due_soon', 'overdue', 'register', 'completeness'], true))
+            @php
+                $shownCount = match ($tab) {
+                    'due_soon' => $this->dueSoon->count(),
+                    'overdue' => $this->overdue->count(),
+                    'register' => $this->registerRows->count(),
+                    'completeness' => $this->completenessRowsFiltered->count(),
+                    default => 0,
+                };
+            @endphp
+            <div class="mb-3 flex flex-wrap items-center gap-3">
+                <label class="flex items-center gap-1.5">
+                    <span class="text-xs font-medium text-gray-500">Frequency</span>
+                    <select wire:model.live="frequencyFilter" class="rounded-md border-gray-300 py-1 text-sm shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
+                        <option value="">All frequencies</option>
+                        @foreach ($this->frequencyOptions as $key => $label)
+                            <option value="{{ $key }}">{{ $label }}</option>
+                        @endforeach
+                    </select>
+                </label>
+                <label class="flex items-center gap-1.5">
+                    <span class="text-xs font-medium text-gray-500">Sort by</span>
+                    <select wire:model.live="sortBy" class="rounded-md border-gray-300 py-1 text-sm shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
+                        <option value="next_due">Next due</option>
+                        <option value="code">Code</option>
+                    </select>
+                </label>
+                @if ($frequencyFilter !== '')
+                    <button wire:click="$set('frequencyFilter', '')" class="text-xs font-medium text-indigo-600 hover:underline">Clear filter</button>
+                @endif
+                <span class="text-xs text-gray-400">Showing {{ $shownCount }} of {{ $this->rows->count() }}</span>
+            </div>
+        @endif
+
         {{-- OVERVIEW --}}
         @if ($tab === 'overview')
             <div class="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">
@@ -438,7 +542,7 @@ new class extends Component
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-gray-100">
-                        @foreach ($this->rows as $r)
+                        @forelse ($this->registerRows as $r)
                             @php $o = $r['o']; @endphp
                             <tr class="align-top hover:bg-gray-50/60">
                                 <td class="px-3 py-2 font-semibold text-gray-700">{{ $o->code }}</td>
@@ -506,7 +610,9 @@ new class extends Component
                                     @endif
                                 </td>
                             </tr>
-                        @endforeach
+                        @empty
+                            <tr><td colspan="12" class="px-3 py-10 text-center text-gray-400">No obligations match this frequency filter.</td></tr>
+                        @endforelse
                     </tbody>
                 </table>
             </div>
@@ -625,7 +731,7 @@ new class extends Component
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-gray-100">
-                        @foreach ($this->completenessRows as $r)
+                        @forelse ($this->completenessRowsFiltered as $r)
                             <tr class="{{ $r['completed'] ? '' : 'bg-red-50' }}">
                                 <td class="px-3 py-2 font-semibold text-gray-700">{{ $r['code'] }}</td>
                                 <td class="px-3 py-2">
@@ -652,7 +758,9 @@ new class extends Component
                                     @endif
                                 </td>
                             </tr>
-                        @endforeach
+                        @empty
+                            <tr><td colspan="9" class="px-3 py-10 text-center text-gray-400">No obligations match this frequency filter.</td></tr>
+                        @endforelse
                     </tbody>
                 </table>
             </div>

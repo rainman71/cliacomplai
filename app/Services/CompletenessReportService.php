@@ -32,6 +32,7 @@ class CompletenessReportService
                     'name' => $o->name,
                     'owner_role' => $o->owner_role,
                     'frequency' => $o->frequency_label,
+                    'interval_months' => $o->interval_months,
                     'completed' => $o->last_completed !== null,
                     'last_completed' => optional($o->last_completed)->toDateString(),
                     'next_due' => $d['next_due']?->toDateString(),
