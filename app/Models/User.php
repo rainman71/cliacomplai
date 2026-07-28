@@ -34,6 +34,7 @@ class User extends Authenticatable
     public const ROLES = [
         'admin' => 'Admin',
         'lab_director' => 'Lab Director',
+        'lab_director_designee' => 'Lab Director Designee',
         'compliance_specialist' => 'Compliance Specialist',
         'tech_supervisor' => 'Technical Supervisor',
         'general_supervisor' => 'General Supervisor',
@@ -44,8 +45,9 @@ class User extends Authenticatable
     /** Roles allowed to manage users/access within a lab. */
     public const MANAGER_ROLES = ['admin', 'lab_director', 'compliance_specialist'];
 
-    /** Roles allowed to edit the register / drive the signature workflow. */
-    public const EDITOR_ROLES = ['admin', 'lab_director', 'compliance_specialist', 'tech_supervisor', 'general_supervisor'];
+    /** Roles allowed to edit the register / drive the signature workflow. A Lab Director Designee
+     *  acts for the director on compliance work (edit + sign) but not user administration. */
+    public const EDITOR_ROLES = ['admin', 'lab_director', 'lab_director_designee', 'compliance_specialist', 'tech_supervisor', 'general_supervisor'];
 
     // --- Relationships ---
 

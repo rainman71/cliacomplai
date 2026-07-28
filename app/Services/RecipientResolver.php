@@ -14,9 +14,12 @@ use Illuminate\Support\Collection;
  */
 class RecipientResolver
 {
+    /** Human role string => one or more app role enums (any-match). */
     private const ROLE_MAP = [
         'lab director' => 'lab_director',
-        'lab director / designee' => 'lab_director',
+        'lab director / designee' => ['lab_director', 'lab_director_designee'],
+        'lab director designee' => 'lab_director_designee',
+        'designee' => 'lab_director_designee',
         'tech supervisor' => 'tech_supervisor',
         'technical supervisor' => 'tech_supervisor',
         'general supervisor' => 'general_supervisor',
@@ -29,16 +32,16 @@ class RecipientResolver
     /** @return Collection<int, User> */
     public function forRole(?string $humanRole): Collection
     {
-        $enum = self::ROLE_MAP[strtolower(trim((string) $humanRole))] ?? null;
+        $enums = (array) (self::ROLE_MAP[strtolower(trim((string) $humanRole))] ?? []);
         $labId = app(CurrentLab::class)->id();
 
-        if (! $enum || ! $labId) {
+        if (! $enums || ! $labId) {
             return collect();
         }
 
         return User::where('active', true)
             ->whereHas('memberships', fn ($m) => $m->where('lab_id', $labId)->where('active', true)
-                ->whereHas('roles', fn ($r) => $r->where('role', $enum)))
+                ->whereHas('roles', fn ($r) => $r->whereIn('role', $enums)))
             ->get();
     }
 

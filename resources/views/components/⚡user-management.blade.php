@@ -260,7 +260,8 @@ new class extends Component
 
         <p class="mt-3 text-xs text-gray-400">
             Managers (Admin, Lab Director, Compliance Specialist) can manage users and edit the register.
-            Supervisors can edit. A person may hold several roles here. All changes are logged.
+            Editors (Lab Director Designee, Technical &amp; General Supervisors) can edit the register and
+            drive signatures but not manage users. A person may hold several roles here. All changes are logged.
         </p>
     </div>
 </div>
