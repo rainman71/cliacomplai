@@ -3,13 +3,15 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Lab extends Model
 {
     protected $fillable = [
-        'name', 'clia_number', 'address', 'profile', 'timezone', 'drive_root_folder_id', 'active',
+        'management_company_id', 'name', 'clia_number', 'address', 'profile', 'timezone',
+        'drive_root_folder_id', 'active',
     ];
 
     /**
@@ -39,6 +41,11 @@ class Lab extends Model
     public function profileValue(string $key): string
     {
         return (string) data_get($this->profile, $key, '');
+    }
+
+    public function company(): BelongsTo
+    {
+        return $this->belongsTo(ManagementCompany::class, 'management_company_id');
     }
 
     public function obligations(): HasMany
